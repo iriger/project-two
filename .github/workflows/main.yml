@@ -84,32 +84,32 @@ jobs:
             # Push to reports branch
             git push origin reports
 
-      # - name: Update PR description with report link
-      #   if: github.event_name == 'pull_request' && always()
-      #   uses: actions/github-script@v7
-      #   with:
-      #     github-token: ${{ secrets.PAT_TOKEN }}
-      #     script: |
-      #       const { owner, repo, number } = context.issue;
-      #       const reportUrl = `https://dashboard.cypress.io/projects/your-project-id-here/runs`;
+      - name: Update PR description with report link
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_TOKEN }}
+          script: |
+            const { owner, repo, number } = context.issue;
+            const reportUrl = `https://dashboard.cypress.io/projects/your-project-id-here/runs`;
 
-      #       // Get current PR description
-      #       const { data: pullRequest } = await github.rest.pulls.get({
-      #         owner,
-      #         repo,
-      #         pull_number: number,
-      #       });
+            // Get current PR description
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: number,
+            });
 
-      #       let body = pullRequest.body || '';
+            let body = pullRequest.body || '';
 
-      #       // Add report link if not already present
-      #       if (!body.includes('Test Report')) {
-      #         body += `\n\n## Test Report\n[View the Cypress Test Results](${reportUrl})`;
+            // Add report link if not already present
+            if (!body.includes('Test Report')) {
+              body += `\n\n## Test Report\n[View the Cypress Test Results](${reportUrl})`;
               
-      #         await github.rest.pulls.update({
-      #           owner,
-      #           repo,
-      #           pull_number: number,
-      #           body,
-      #         });
-      #       }
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: number,
+                body,
+              });
+            }
