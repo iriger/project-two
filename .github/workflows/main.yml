@@ -28,7 +28,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./projects/uu8h1r/
           publish_branch: gh-pages
-          force_orphan: tru
+          force_orphan: true
+
+          
 
 
 
