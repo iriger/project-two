@@ -39,12 +39,48 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Create redirect HTML
+        if: always()
+        run: |
+            # Create directory for GitHub Pages
+            mkdir -p _site
+            
+            # Get the Cypress run URL from the logs
+            CYPRESS_RUN_URL=$(grep -o 'https://cloud.cypress.io/projects/uu8h1r/runs/[0-9]*' <<< "$(cat cypress-run.log 2>/dev/null || echo '')" | tail -1)
+            
+            # If we couldn't find the URL in logs, use the project URL
+            if [ -z "$CYPRESS_RUN_URL" ]; then
+              CYPRESS_RUN_URL="https://cloud.cypress.io/projects/uu8h1r/runs"
+            fi
+            
+            # Create index page with automatic redirect
+            echo "<!DOCTYPE html>
+            <html>
+            <head>
+                <title>Redirecting to Cypress Cloud Report</title>
+                <meta http-equiv=\"refresh\" content=\"0; URL='${CYPRESS_RUN_URL}'\" />
+            </head>
+            <body>
+                <p>If you are not redirected automatically, <a href=\"${CYPRESS_RUN_URL}\">click here to view the Cypress Test Report</a>.</p>
+            </body>
+            </html>" > _site/index.html
+        
+      - name: Deploy to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
         with:
-         github_token: ${{ secrets.GITHUB_TOKEN }}
-         publish_branch: gh-pages #your-branch  # default: gh-pages
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./_site
+            publish_branch: reports
+
+
+
+
+      # - name: Deploy
+      #   uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #    github_token: ${{ secrets.GITHUB_TOKEN }}
+      #    publish_branch: gh-pages #your-branch  # default: gh-pages
 
 
 
