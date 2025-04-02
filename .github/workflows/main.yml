@@ -39,77 +39,86 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
-      - name: Create reports page with dashboard link
-        if: always()
-        run: |
-            # Configure git with PAT for push access
-            git config --global user.name "GitHub Actions Bot"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            
-            # Create new branch or switch to it
-            git fetch origin reports || true
-            git checkout reports || git checkout -b reports
-            
-            # Create GitHub Pages directory
-            mkdir -p github-pages
-            
-            # Create index page with link to Cypress Dashboard
-            echo "<!DOCTYPE html>
-            <html>
-            <head>
-                <title>Cypress Test Reports</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                    .report-link { margin: 10px 0; }
-                </style>
-            </head>
-            <body>
-                <h1>Cypress Test Reports</h1>
-                <div class='report-link'>
-                    <a href='https://cloud.cypress.io/projects/uu8h1r/runs'>View Latest Test Results in Cypress Cloud</a>
-                </div>
-                <div>
-                    <p>Last updated: $(date)</p>
-                </div>
-            </body>
-            </html>" > github-pages/index.html
-            
-            # Add all files
-            git add -A
-            
-            # Commit changes
-            git commit -m "Add test report link from GitHub Actions run ${GITHUB_RUN_ID}" || echo "No changes to commit"
-            
-            # Push to reports branch
-            git push origin reports
 
-      - name: Update PR description with report link
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          github-token: ${{ secrets.PAT_TOKEN }}
-          script: |
-            const { owner, repo, number } = context.issue;
-            const reportUrl = `https://dashboard.cypress.io/projects/your-project-id-here/runs`;
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         publish_branch: gh-pages #your-branch  # default: gh-pages
 
-            // Get current PR description
-            const { data: pullRequest } = await github.rest.pulls.get({
-              owner,
-              repo,
-              pull_number: number,
-            });
 
-            let body = pullRequest.body || '';
 
-            // Add report link if not already present
-            if (!body.includes('Test Report')) {
-              body += `\n\n## Test Report\n[View the Cypress Test Results](${reportUrl})`;
+      # - name: Create reports page with dashboard link
+      #   if: always()
+      #   run: |
+      #       # Configure git with PAT for push access
+      #       git config --global user.name "GitHub Actions Bot"
+      #       git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            
+      #       # Create new branch or switch to it
+      #       git fetch origin reports || true
+      #       git checkout reports || git checkout -b reports
+            
+      #       # Create GitHub Pages directory
+      #       mkdir -p github-pages
+            
+      #       # Create index page with link to Cypress Dashboard
+      #       echo "<!DOCTYPE html>
+      #       <html>
+      #       <head>
+      #           <title>Cypress Test Reports</title>
+      #           <style>
+      #               body { font-family: Arial, sans-serif; margin: 20px; }
+      #               h1 { color: #333; }
+      #               .report-link { margin: 10px 0; }
+      #           </style>
+      #       </head>
+      #       <body>
+      #           <h1>Cypress Test Reports</h1>
+      #           <div class='report-link'>
+      #               <a href='https://cloud.cypress.io/projects/uu8h1r/runs'>View Latest Test Results in Cypress Cloud</a>
+      #           </div>
+      #           <div>
+      #               <p>Last updated: $(date)</p>
+      #           </div>
+      #       </body>
+      #       </html>" > github-pages/index.html
+            
+      #       # Add all files
+      #       git add -A
+            
+      #       # Commit changes
+      #       git commit -m "Add test report link from GitHub Actions run ${GITHUB_RUN_ID}" || echo "No changes to commit"
+            
+      #       # Push to reports branch
+      #       git push origin reports
+
+      # - name: Update PR description with report link
+      #   if: github.event_name == 'pull_request' && always()
+      #   uses: actions/github-script@v7
+      #   with:
+      #     github-token: ${{ secrets.PAT_TOKEN }}
+      #     script: |
+      #       const { owner, repo, number } = context.issue;
+      #       const reportUrl = `https://dashboard.cypress.io/projects/your-project-id-here/runs`;
+
+      #       // Get current PR description
+      #       const { data: pullRequest } = await github.rest.pulls.get({
+      #         owner,
+      #         repo,
+      #         pull_number: number,
+      #       });
+
+      #       let body = pullRequest.body || '';
+
+      #       // Add report link if not already present
+      #       if (!body.includes('Test Report')) {
+      #         body += `\n\n## Test Report\n[View the Cypress Test Results](${reportUrl})`;
               
-              await github.rest.pulls.update({
-                owner,
-                repo,
-                pull_number: number,
-                body,
-              });
-            }
+      #         await github.rest.pulls.update({
+      #           owner,
+      #           repo,
+      #           pull_number: number,
+      #           body,
+      #         });
+      #       }
